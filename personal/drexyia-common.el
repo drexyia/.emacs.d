@@ -1,3 +1,12 @@
+(defun drexyia-kill-this-buffer () 
+  (interactive) 
+  (kill-buffer (current-buffer)))
+
+(defun drexyia-revert-this-buffer ()
+  (interactive)
+  (revert-buffer nil t t)
+  (message (concat "Reverted buffer " (buffer-name))))
+
 (defun drexyia-use-proxy ()
   "sets a default proxy this can be used with fiddler to see tracing information"
   (interactive)
