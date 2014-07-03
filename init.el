@@ -1,4 +1,4 @@
-;;; init.el --- initial init file based on https://github.com/larstvei/dot-emacs
+;;; init.el --- init file from https://github.com/drexyia/.emacs.d
 
 ;;; Commentary:
 
@@ -51,10 +51,14 @@
 		      helm-descbinds
 		      w32-browser
 		      browse-kill-ring)))
-  (drexyia-packman-list-install package-list)))
+       (package-refresh-contents)
+       (drexyia-packman-list-install package-list)))
 
 ;;;; set ui elements
-(set-frame-font "-outline-Consolas-normal-r-normal-normal-14-97-96-96-c-*-iso8859-1") ;;use consolas font
+;; use consolas font on windows
+(when (string-equal system-type "windows-nt") 
+  (set-frame-font "-outline-Consolas-normal-r-normal-normal-14-97-96-96-c-*-iso8859-1")) 
+
 (set-language-environment "UTF-8")
 
 (setq inhibit-startup-message t)     ; No splash screen please.
@@ -132,16 +136,19 @@
 (global-set-key (kbd "<f12>") 'menu-bar-mode)
 (global-set-key (kbd "M-s o") 'helm-occur) ;; use helm-occur instead of occur
 (global-set-key (kbd "M-j") 'drexyia-join-line)
+(global-set-key (kbd "C-`") (kbd "C-u C-SPC")) ;; navigate mark
 
 (define-key global-map [?\s-x] 'prelude-exchange-point-and-mark)
 
 ;; in dired, you can press a instead of Enter to open the dir. This way, the previous dir will be automatically closed.
 ;; if you want Enter  and ^ (parent dir) to use the same buffer, put the following in your emacs init file
+;; inorder to open a file and not close the dired buffer use f
+(put 'dired-find-alternate-file 'disabled nil)
 (define-key dired-mode-map (kbd "<return>") 'dired-find-alternate-file) ; was dired-advertised-find-file
 (define-key dired-mode-map (kbd "^") (lambda () (interactive) (find-alternate-file "..")))  ; was dired-up-directory
 
 ;;;; set key chords
-;;(key-chord-define-global "bb" 'switch-to-buffer)
+
 (key-chord-define-global "bb" 'helm-buffers-list)
 (key-chord-define-global "kk" 'kill-buffer)
 (key-chord-define-global "ww" 'drexyia-open-folder-in-explorer)
@@ -180,7 +187,6 @@
 (load-theme 'monokai t)
 (powerline-vim-theme)
 
-(put 'dired-find-alternate-file 'disabled nil)
 (put 'upcase-region 'disabled nil)
 
 (provide 'init)
