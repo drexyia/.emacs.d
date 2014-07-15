@@ -264,3 +264,40 @@ command was winner-undo or winner-redo."
   (if (package-installed-p package)
     (message "%s installed" package)
     (package-install package))))
+
+(defun drexyia-compare-marked-left-right ()
+  "Runs beyond compare on marked files in dired"
+  (interactive)
+  (let* ((marked-files (dired-get-marked-files nil nil))
+         (other-win (get-window-with-predicate
+                     (lambda (window)
+                       (with-current-buffer (window-buffer window)
+                         (and (not (eq window (selected-window)))
+                              (eq major-mode 'dired-mode))))))
+         (other-marked-files (and other-win
+                                  (with-current-buffer (window-buffer other-win)
+                                    (dired-get-marked-files nil)))))
+    (cond ((= (length marked-files) 2)
+           (drexyia-compare-run-beyond-compare (nth 0 marked-files)
+                        (nth 1 marked-files)))
+          ((and (= (length marked-files) 1)
+                (= (length other-marked-files) 1))
+           (drexyia-compare-run-beyond-compare (nth 0 marked-files)
+                        (nth 0 other-marked-files)))
+          (t (error "mark exactly 2 files, at least 1 locally")))))
+
+(defun drexyia-compare-run-beyond-compare (left right)
+  (let (
+	(program "C:\\Program Files (x86)\\Beyond Compare 3\\BCompare.exe")
+	(left-right-join nil))
+    (setq left-right-join (format "%s %s" left right))
+  (w32-shell-execute "open" program left-right-join)))
+
+(defun drexyia-switch-to-eshell ()
+  "This interactive function switches you to a eshell, and if triggered in the eshell it switches back to the previous buffer.."
+  (interactive)
+  (if (string= (buffer-name) "*eshell*")
+      (switch-to-prev-buffer)
+    (eshell)))
+
+  

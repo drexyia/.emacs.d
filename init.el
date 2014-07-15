@@ -39,8 +39,6 @@
 		      helm
 		      powerline
 		      monokai-theme
-		      flx-ido
-		      ido-vertical-mode
 		      dired+
 		      ace-jump-mode
 		      key-chord
@@ -81,6 +79,11 @@
       `((".*" . ,emacs-autosave-directory))
       auto-save-file-name-transforms
       `((".*" ,emacs-autosave-directory t)))
+
+;; when editing a file emacs creates a file .#filename this file is used to lock the file being edited
+;; if another user or instance of emacs tries to open the file a warning will be dispayed
+;; the below disables creating these files
+(setq create-lockfiles nil)
 
 ;;;; set file associations
 (add-to-list 'auto-mode-alist '("\\.aspx\\'" . web-mode))
@@ -154,6 +157,7 @@
 (key-chord-define-global "ww" 'drexyia-open-folder-in-explorer)
 (key-chord-define-global "jj" 'ace-jump-word-mode)
 (key-chord-define-global "cc" 'comment-or-uncomment-region)
+(key-chord-define-global "ss" 'drexyia-switch-to-eshell)
 
 ;;;; set dired funcionality
 ;; auto-refresh dired on file change
@@ -181,11 +185,39 @@
 ;;;; setup helm
 (require 'helm-buffers)
 ;; do not show temp buffers when switching buffers
-(add-to-list 'helm-boring-buffer-regexp-list "^\\*")
+(add-to-list 'helm-boring-buffer-regexp-list "\\*scratch*")
+(add-to-list 'helm-boring-buffer-regexp-list "\\*Messages")
+(add-to-list 'helm-boring-buffer-regexp-list "\\*Dired")
 
 ;;;; set theme
 (load-theme 'monokai t)
+
+;;;; set modeline
 (powerline-vim-theme)
+(setq-default
+ mode-line-format
+ '("%e"
+   (:eval
+    (let* ((active (powerline-selected-window-active))
+           ;; left hand side displays Read only or Modified.
+           (lhs (list (powerline-raw
+                       (cond (buffer-read-only "Read only")
+                             ((buffer-modified-p) "Modified")
+                             (t "")) nil 'l)))
+           ;; right side hand displays (line,column).
+           (rhs (list
+                 (powerline-raw
+                  (concat
+                   "(" (number-to-string (line-number-at-pos))
+                   "," (number-to-string (current-column)) ")") nil 'r)))
+           ;; center displays buffer name.
+           (center (list (powerline-raw "%b" nil))))
+      (concat (powerline-render lhs)
+              (powerline-fill-center nil (/ (powerline-width center) 2.0))
+              (powerline-render center)
+              (powerline-fill nil (powerline-width rhs))
+              (powerline-render rhs))))))
+
 
 (put 'upcase-region 'disabled nil)
 
