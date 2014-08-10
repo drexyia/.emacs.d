@@ -39,6 +39,8 @@
 		      helm
 		      powerline
 		      monokai-theme
+		      fill-column-indicator
+		      company
 		      dired+
 		      ace-jump-mode
 		      key-chord
@@ -51,16 +53,6 @@
 		      browse-kill-ring)))
        (package-refresh-contents)
        (drexyia-packman-list-install package-list)))
-
-;;;; set ui elements
-;; use consolas font on windows
-(when (string-equal system-type "windows-nt") 
-  (set-frame-font "-outline-Consolas-normal-r-normal-normal-14-97-96-96-c-*-iso8859-1")) 
-
-(set-language-environment "UTF-8")
-
-(setq inhibit-startup-message t)     ; No splash screen please.
-(setq initial-scratch-message nil)   ; Clean scratch buffer.
 
 (dolist (mode
          '(tool-bar-mode                ; No toolbars, more room for text.
@@ -104,8 +96,10 @@
 (dolist (feature
          '(dired+
 	   key-chord
+	   fill-column-indicator
 	   ibuffer
-	   ibuf-ext))
+	   ibuf-ext
+	   helm-buffers))
   (require feature))
 
 (dolist (mode
@@ -158,7 +152,6 @@
 (key-chord-define-global "jj" 'ace-jump-word-mode)
 (key-chord-define-global "cc" 'comment-or-uncomment-region)
 (key-chord-define-global "ss" 'drexyia-switch-to-eshell)
-
 ;;;; set dired funcionality
 ;; auto-refresh dired on file change
 (add-hook 'dired-mode-hook '(lambda ()
@@ -168,29 +161,42 @@
 ;; allow dired to be able to delete or copy a whole dir.
 (setq dired-recursive-copies (quote always)) ; “always” means no asking
 (setq dired-recursive-deletes (quote top)) ; “top” means ask once
-
 ;;;; set ibuffer groupings
 ;; sort the buffers with dired folders first
 (setq ibuffer-saved-filter-groups
       (quote (("default"
                ("Dired" (mode . dired-mode))
-	       ("Emacs" (name . "^\\*"))
+	       ("Emacs" (or (name . "eshell")
+				 (name . "*Messages*")
+				 (name . "*scratch*")
+				 (name . "*notes*")))
+	       ("Emacs-Temp" (name . "^\\*"))
 	       ("Temp" (name . "^temp*"))
 	       ))))
-	     
+
+
+
 (add-hook 'ibuffer-mode-hook
           (lambda ()
             (ibuffer-switch-to-saved-filter-groups "default")))
 
 ;;;; setup helm
-(require 'helm-buffers)
 ;; do not show temp buffers when switching buffers
 (add-to-list 'helm-boring-buffer-regexp-list "\\*scratch*")
 (add-to-list 'helm-boring-buffer-regexp-list "\\*Messages")
 (add-to-list 'helm-boring-buffer-regexp-list "\\*Dired")
 
-;;;; set theme
+;;;; set ui elements
 (load-theme 'monokai t)
+
+;; use consolas font on windows
+(when (string-equal system-type "windows-nt") 
+  (set-frame-font "-outline-Consolas-normal-r-normal-normal-14-97-96-96-c-*-iso8859-1")) 
+
+(set-language-environment "UTF-8")
+
+(setq inhibit-startup-message t)     ; No splash screen please.
+(setq initial-scratch-message nil)   ; Clean scratch buffer.
 
 ;;;; set modeline
 (powerline-vim-theme)
@@ -218,8 +224,11 @@
               (powerline-fill nil (powerline-width rhs))
               (powerline-render rhs))))))
 
-
 (put 'upcase-region 'disabled nil)
+
+(add-hook 'csharp-mode-hook 'fci-mode)
+(add-hook 'sql-mode-hook 'fci-mode)
+(add-hook 'lisp-mode-hook 'fci-mode)
 
 (provide 'init)
 
