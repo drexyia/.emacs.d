@@ -1,32 +1,84 @@
-(dolist (file
-         '(".emacs.d/elisp/drexyia-core.el"
-	   ".emacs.d/elisp/dired+.el"
-	   ".emacs.d/elisp/key-chord.el"))
-  (load-file file))
 
-(dolist (path
-         '(".emacs.d/helm"))
-  (add-to-list 'load-path path))
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa-stable" . "http://stable.melpa.org/packages/") t)
 
-(dolist (feature
-         '(key-chord
-	   dired+
-	   helm-config))
-  (require feature))
+;; ; activate all the packages (in particular autoloads)
+(package-initialize)
+
+(setq visible-bell 1)
+(tool-bar-mode -1)
+(ido-mode 1)
 
 (dolist (mode
-         '(tool-bar-mode                ; No toolbars, more room for text.
-           scroll-bar-mode              ; No scroll bars either.
-	   menu-bar-mode
-           blink-cursor-mode))          ; The blinking cursor gets old.
+         '(blink-cursor-mode))          ; The blinking cursor gets old.
   (funcall mode 0))
 
 (dolist (mode
-         '(show-paren-mode            ; Highlight matching parentheses.
-	   cua-selection-mode
-           helm-mode
-	   key-chord-mode)) 
+         '(show-paren-mode            ; Highlight matching parethenses.
+           key-chord-mode))
   (funcall mode 1))
+
+(setq set-mark-command-repeat-pop t)
+
+(dolist (var-to-set
+         '(ido-everywhere
+           ido-enable-flex-matching
+           set-mark-command-repeat-pop
+           dired-dwim-target
+           org-src-fontify-natively
+           case-fold-search
+           inhibit-startup-message
+           inhibit-startup-echo-area-message
+           ))
+  (setq var-to-set t))
+
+;;;; Key Bindings
+
+(windmove-default-keybindings)
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+(global-set-key (kbd "C-x C-r") 'recentf-open-files)
+(global-set-key (kbd "C-t") 'auto-revert-tail-mode)
+
+;;;; Ibuffer
+
+(autoload 'ibuffer "ibuffer" "List buffers." t)
+
+(setq ibuffer-saved-filter-groups
+      (quote (("default"
+	       ("dired" (or
+			 (mode . dired-mode)
+			 (mode . wdired-mode)))
+	       ("emacs" (or
+			 (name . "^\\*")
+			 (name . "^\\*scratch\\*$")
+			 (name . "^\\*Messages\\*$")
+			 (name . "^\\*Completions\\*$")
+			 (name . "^\\*grep\\*$")
+			 (name . "^\\*Open Recent\\*$")
+			 ))))))
+
+(add-hook 'ibuffer-mode-hook
+	  (lambda ()
+	    (ibuffer-switch-to-saved-filter-groups "default")))
+
+;;;; KEY CHORD
+
+(key-chord-define-global "bb" 'ido-switch-buffer)
+(key-chord-define-global "kk" 'ido-kill-buffer)
+(key-chord-define-global "jj" 'ace-jump-mode)
+(key-chord-define-global "gg" 'magit-status)
+ 
+(require 'spaceline-config)
+(spaceline-emacs-theme)
+
+(global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c o")
+                (lambda () (interactive) (find-file "~/organizer.org")))
+
+(setq org-default-notes-file "~/organizer.org")
+;; https://orgmode.org/manual/Conflicts.html
+(setq org-replace-disputed-keys t)
 
 ;;;; set emacs prompts
 
@@ -36,36 +88,3 @@
       (remq 'process-kill-buffer-query-function
             kill-buffer-query-functions))
 (fset 'yes-or-no-p 'y-or-n-p)
-
-;;;; set dired funcionality
-
-;; auto-refresh dired on file change
-(add-hook 'dired-mode-hook '(lambda ()
-                              'auto-revert-mode
-                              (setq auto-revert-verbose nil)))
-(setq dired-dwim-target t)
-;; allow dired to be able to delete or copy a whole dir.
-(setq dired-recursive-copies (quote always)) ; “always” means no asking
-(setq dired-recursive-deletes (quote top)) ; “top” means ask once
-
-;;;; set key bindings
-
-(global-set-key (kbd "M-<up>") 'windmove-up)
-(global-set-key (kbd "M-<down>") 'windmove-down)
-(global-set-key (kbd "M-<right>") 'windmove-right)
-(global-set-key (kbd "M-<left>") 'windmove-left)
-(global-set-key (kbd "<M-S-up>")    'move-text-up)
-(global-set-key (kbd "<M-S-down>")  'move-text-down)
-(global-set-key (kbd "C-x C-b") 'ibuffer)
-(global-set-key (kbd "C-h l") 'find-library)
-(global-set-key (kbd "<f6>") 'bookmark-set)
-(global-set-key (kbd "<f12>") 'menu-bar-mode)
-(global-set-key (kbd "M-j") 'drexyia-join-line)
-(global-set-key (kbd "C-`") (kbd "C-u C-SPC")) ;; navigate mark
-
-;;;; set key chords
-
-(key-chord-define-global "bb" 'helm-buffers-list)
-(key-chord-define-global "kk" 'kill-buffer)
-(key-chord-define-global "cc" 'comment-or-uncomment-region)
-(key-chord-define-global "ss" 'drexyia-switch-to-eshell)
